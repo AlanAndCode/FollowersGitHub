@@ -15,9 +15,10 @@ class FollowersListVC: UIViewController {
         case main
     }
     
-    
+    var page = 2
     var username: String!
     var followers: [Follower] = []
+    var hasMoreFollowers = true
     
     var collectionView: UICollectionView!
     var dataSource: UICollectionViewDiffableDataSource<Section, Follower>!
@@ -26,7 +27,7 @@ class FollowersListVC: UIViewController {
         super.viewDidLoad()
         configureViewController()
         configureCollectionView()
-        getFollowers()
+        getFollowers(username: username, page: page)
         configureDataSource()
         
     }
@@ -51,12 +52,14 @@ class FollowersListVC: UIViewController {
     
     
     // consumindo os seguidores
-    func getFollowers(){
-        NetworkManager.shared.getFollowers(for: username, page: 1) { [weak self] result in
+    func getFollowers(username: String, page: Int){
+        NetworkManager.shared.getFollowers(for: username, page: page) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case.success(let followers):
-                self.followers = followers
+                if followers.count < 100 {
+                self.hasMoreFollowers = false }
+                self.followers.append(contentsOf: followers)
                 self.updateData()
                 
                 
@@ -89,14 +92,17 @@ class FollowersListVC: UIViewController {
 
 extension FollowersListVC: UICollectionViewDelegate {
     
-    func scrollViewDidZoom(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        let  offsety = scrollView.contentOffset.y
-        let  contentHeight = scrollView.contentSize.height
-        let  height = scrollView.frame.size.height
+    func scrollViewDidScroll(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let height = scrollView.frame.size.height
         
-        print ("OffsetY = \(offsety)")
-        print ("ContentHeight = \(contentHeight)")
-        print ("Height = \(height) ")
+        // Verifica se chegou ao fim e se não estamos carregando seguidores
+        if offsetY > contentHeight - height - 100 {
+            guard hasMoreFollowers else { return }
+            page += 1
+            getFollowers(username: username, page: page)
+            
+        }
     }
-    
 }
