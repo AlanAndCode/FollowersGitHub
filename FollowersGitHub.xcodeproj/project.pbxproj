@@ -34,13 +34,22 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"/Localized: Support/LaunchScreen.storyboard",
-				"Custom Views/cells/FollowerCell.swift",
-				"Custom Views/GFAlertVC.swift",
-				"Custom Views/GFAvatarImageView.swift",
-				"Custom Views/GFBodyLabel.swift",
-				"Custom Views/GFButton.swift",
-				"Custom Views/GFTextField.swift",
-				"Custom Views/GFTitleLabel.swift",
+				"Custom Views/Buttons/GFButton.swift",
+				"Custom Views/Cells/FollowerCell.swift",
+				"Custom Views/ImageViews/GFAvatarImageView.swift",
+				"Custom Views/Labels/GFBodyLabel.swift",
+				"Custom Views/Labels/GFSecondaryTitleLabel.swift",
+				"Custom Views/Labels/GFTitleLabel.swift",
+				"Custom Views/TextFields/GFTextField.swift",
+				"Custom Views/ViewControllers/GFAlertVC.swift",
+				"Custom Views/ViewControllers/GFUserInfoHeaderVC.swift",
+				"Custom Views/ViewControllers/ItemInfoVCs/GFFollowerItemVC.swift",
+				"Custom Views/ViewControllers/ItemInfoVCs/GFItemInfoVC.swift",
+				"Custom Views/ViewControllers/ItemInfoVCs/GFRepoItemVC.swift",
+				"Custom Views/Views/GFEmptyStateView.swift",
+				"Custom Views/Views/GFItemInfoView.swift",
+				"Extensions/Date+ext.swift",
+				"Extensions/String+ext.swift",
 				"Extensions/UIViewController+est.swift",
 				Managers/NetworkManager.swift,
 				Model/Follower.swift,
@@ -48,11 +57,13 @@
 				Screens/FavoritesListVC.swift,
 				Screens/FollowersListVC.swift,
 				Screens/SearchVc.swift,
+				Screens/UserInfoVC.swift,
 				Support/AppDelegate.swift,
 				Support/Assets.xcassets,
 				Support/SceneDelegate.swift,
 				Support/ViewController.swift,
-				Utilities/ErrorMessage.swift,
+				Utilities/Constants.swift,
+				Utilities/GFError.swift,
 				Utilities/UIHelper.swift,
 			);
 			target = 98C5586D2CC2D8C100628ED3 /* FollowersGitHub */;
@@ -61,18 +72,26 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"/Localized: Support/LaunchScreen.storyboard",
-				"Custom Views/GFAlertVC.swift",
-				"Custom Views/GFAvatarImageView.swift",
-				"Custom Views/GFBodyLabel.swift",
-				"Custom Views/GFButton.swift",
-				"Custom Views/GFTextField.swift",
-				"Custom Views/GFTitleLabel.swift",
+				"Custom Views/Buttons/GFButton.swift",
+				"Custom Views/ImageViews/GFAvatarImageView.swift",
+				"Custom Views/Labels/GFBodyLabel.swift",
+				"Custom Views/Labels/GFSecondaryTitleLabel.swift",
+				"Custom Views/Labels/GFTitleLabel.swift",
+				"Custom Views/TextFields/GFTextField.swift",
+				"Custom Views/ViewControllers/GFAlertVC.swift",
+				"Custom Views/ViewControllers/GFUserInfoHeaderVC.swift",
+				"Custom Views/ViewControllers/ItemInfoVCs/GFFollowerItemVC.swift",
+				"Custom Views/ViewControllers/ItemInfoVCs/GFItemInfoVC.swift",
+				"Custom Views/ViewControllers/ItemInfoVCs/GFRepoItemVC.swift",
+				"Extensions/Date+ext.swift",
+				"Extensions/String+ext.swift",
 				"Extensions/UIViewController+est.swift",
 				Info.plist,
 				Managers/NetworkManager.swift,
 				Screens/FavoritesListVC.swift,
 				Screens/FollowersListVC.swift,
 				Screens/SearchVc.swift,
+				Screens/UserInfoVC.swift,
 				Support/AppDelegate.swift,
 				Support/Assets.xcassets,
 				Support/SceneDelegate.swift,
@@ -331,6 +350,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DB8R4DD8VK;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FollowersGitHub/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -357,6 +377,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DB8R4DD8VK;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FollowersGitHub/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
