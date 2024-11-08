@@ -8,24 +8,15 @@
 import UIKit
 
 
-protocol FollowerListVCDelegate: AnyObject {
-    
-    func didRequestFollowers(for username: String)
-        
-    
-    
-}
 
-class FollowersListVC: UIViewController {
-    protocol FollowerListVCDelegate: AnyObject {
-    func didRequestFollowers(for username: String)
-    }
+class FollowersListVC: GFDataLoadingVC {
+    
     
     enum Section {
         case main
     }
     
-    var page = 2
+    var page = 1
     var username: String!
     var followers: [Follower] = []
     var hasMoreFollowers = true
@@ -33,7 +24,18 @@ class FollowersListVC: UIViewController {
     var isSearching = false
     var collectionView: UICollectionView!
     var dataSource: UICollectionViewDiffableDataSource<Section, Follower>!
-    //inicializa com configuracoes iniciais baseadas no que quero carregar o app
+    var isLoadingMoreFollowers = false
+    
+    init(username: String){
+        super.init(nibName: nil, bundle: nil)
+        self.username = username
+        title = username
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureViewController()
@@ -54,6 +56,10 @@ class FollowersListVC: UIViewController {
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
+        
+        
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped))
+        navigationItem.rightBarButtonItem = addButton
     }
     //o que é uma collection view? modo de exibicao por colecao ideal para quando temos celulas lado a lado
     func configureCollectionView(){
@@ -65,42 +71,51 @@ class FollowersListVC: UIViewController {
     }
     
     func configureSearchController() {
-        let searchController = UISearchController()
+        let searchController                  = UISearchController()
         searchController.searchResultsUpdater = self
-        searchController.searchBar.delegate = self
         searchController.searchBar.placeholder = "Search for a username"
         searchController.obscuresBackgroundDuringPresentation = false
-        navigationItem.searchController = searchController
-        definesPresentationContext = true // Garantir que a barra de busca apareça corretamente
+        navigationItem.searchController       = searchController
+        definesPresentationContext            = true // Garantir que a barra de busca apareça corretamente
     }
     
     // consumindo os seguidores
     func getFollowers(username: String, page: Int){
         showLoadingView()
+        isLoadingMoreFollowers = true
         NetworkManager.shared.getFollowers(for: username, page: page) { [weak self] result in
             guard let self = self else { return }
             self.dismissLoadingView()
             switch result {
             case.success(let followers):
-                if followers.count < 100 {
-                    self.hasMoreFollowers = false }
-                self.followers.append(contentsOf: followers)
-                
-                if self.followers.isEmpty {
-                    let message = "This user doesn't have any followers. Go follow them"
-                    DispatchQueue.main.async {
-                        self.showEmptyStateView(with: message, in: self.view)
-                    }
-                    return
-                }
-                
-                self.updateData(on: self.followers)
+                self.updateUI(with: followers)
+              
                 
             case .failure(let error):
                 self.presentGFAlertOnMainThread(title: "Bad Stuff Happend", message: error.rawValue, buttonTitle: "Ok")
             }
+            
+            self.isLoadingMoreFollowers = false
         }
     }
+    
+    func updateUI(with: [Follower]){
+        if followers.count < 100 {
+            self.hasMoreFollowers = false }
+        self.followers.append(contentsOf: followers)
+        
+        if self.followers.isEmpty {
+            let message = "This user doesn't have any followers. Go follow them"
+            DispatchQueue.main.async {
+                self.showEmptyStateView(with: message, in: self.view)
+            }
+            return
+        }
+        
+        
+        self.updateData(on: self.followers)
+    }
+    
     
     //de onde virao as informacoes a serem puxadas
     func configureDataSource() {
@@ -111,7 +126,7 @@ class FollowersListVC: UIViewController {
         })
     }
     
-    
+    //
     func updateData(on followers: [Follower]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Follower>()
         snapshot.appendSections([.main])
@@ -132,8 +147,8 @@ extension FollowersListVC: UICollectionViewDelegate {
         
         // Verifica se chegou ao fim e se não estamos carregando seguidores
         if offsetY > contentHeight - height {
-            guard hasMoreFollowers else { return }
-            page += 1
+            guard hasMoreFollowers, !isLoadingMoreFollowers else { return }
+            page =  page + 1
             getFollowers(username: username, page: page)
             
         }
@@ -151,35 +166,65 @@ extension FollowersListVC: UICollectionViewDelegate {
         present(navController, animated: true)
     }
     
+    @objc func addButtonTapped(){
+        showLoadingView()
+        
+        NetworkManager.shared.getUserInfo(for: username) { [weak self] result in
+            guard let self = self else { return }
+            self.dismissLoadingView()
+            
+            
+            switch result {
+                case .success(let user):
+                let favorite = Follower(login: user.login, avatarUrl: user.avatarUrl)
+                
+               
+                PersitenceManager.updatewWith(favorite: favorite, actionType: .add) { [weak self] error in
+                    guard let self = self else { return }
+                    guard let error = error else {
+                        self.presentGFAlertOnMainThread(title: "Sucess", message: "you have sucefully favortied this user", buttonTitle: "Hooray")
+                        return
+                    }
+                    self.presentGFAlertOnMainThread(title: "Something went wrong", message: error.rawValue, buttonTitle: "ök")
+
+                }
+                
+                
+            case .failure(let error):
+                self.presentGFAlertOnMainThread(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
+            }
+        }
+    }
 }
 
-extension FollowersListVC: UISearchResultsUpdating, UISearchBarDelegate {
+extension FollowersListVC: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         
-        guard let filter = searchController.searchBar.text, !filter.isEmpty else {return}
-        isSearching = true
+        guard let filter  = searchController.searchBar.text, !filter.isEmpty else {
+            filteredFollowers.removeAll()
+            updateData(on: followers)
+            isSearching = false
+            return
+        }
+        
+        isSearching       = true
         filteredFollowers = followers.filter { $0.login.lowercased().contains(filter.lowercased()) }
         updateData(on: filteredFollowers)
-        
-    }
-    func
-    searchBarCancelButtonClicked(_
-    searchBar: UISearchBar) {
-        isSearching = false
-        updateData(on: followers)
+
     }
 }
 
-extension FollowersListVC: FollowerListVCDelegate{
+extension FollowersListVC: UserInfoVCDelegate{
     
     
     func didRequestFollowers(for username: String) {
         self.username = username
         title = username
-        page = 1
+        page  = 1
         followers.removeAll()
         filteredFollowers.removeAll()
         collectionView.setContentOffset(.zero, animated: true)
+        collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .top, animated: true)
         getFollowers(username: username, page: page)
     }
     
