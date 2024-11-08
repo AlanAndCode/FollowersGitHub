@@ -6,7 +6,7 @@
 //
 
 import UIKit
-
+//usado para fazer reload na tabela e remover celular que ja sairam da view
 extension UITableView {
     
     func reloadDataOnMainThread () {
@@ -14,6 +14,8 @@ extension UITableView {
             self.reloadData()
         }
     }
+    
+    
 func removeExcessCells () {
     tableFooterView = UIView(frame: .zero)
             }
