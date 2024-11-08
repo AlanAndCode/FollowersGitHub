@@ -6,7 +6,7 @@
 //
 
 import UIKit
-
+//DataLoadin para mostrar telas de carregamento ou vazias
 class GFDataLoadingVC: UIViewController {
     
     var containerView: UIView!
